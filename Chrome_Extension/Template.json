@@ -1,0 +1,36 @@
+
+[{
+    "objects": [
+        {
+            "name": "express",
+            "type": "variable",
+            "declaratiion": 1,
+            "usages": [1,4]
+        },
+        {
+            "name": "post",
+            "type": "function",
+            "funcStart": 15,
+            "funcEnd": 25,
+            "returnLine": 20,
+            "catch": true,
+            "usage": [5,6],
+            "params": ["param1", "param2", "param3"],
+            
+        }   
+    ]
+},
+{
+    "code_smells": [
+        {
+            "type": "unused_code",
+            "line": 5
+        },
+        {
+            "type": "large_object",
+            "object_size": 25,
+            "recommended_size": 20
+        }
+    ]
+}
+]
