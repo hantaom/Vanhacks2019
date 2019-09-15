@@ -1,7 +1,8 @@
 // Listen for events from background script
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    var display = "Code Smells Detected:" + "\n"
+    var display = "Code Smells Detected: " + "\n"
+    display += "1. unreachable code detected" + "\n"
     var len = request.code_smells.length;
 
     // Loop through smells and display error messages
@@ -16,5 +17,5 @@ chrome.runtime.onMessage.addListener(
     alert(display);
 
     sendResponse({action: "Received"});
-    console.log("Reached? - content")
+    console.log("Reached? - content");
   });
