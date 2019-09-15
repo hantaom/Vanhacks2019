@@ -34,7 +34,6 @@ var message = {result: []}
 
       arrOfTops.sort(function(a, b) {return a - b});
 
-      console.log(arrOfTops);
       //sorted the lines of code:
       var strsOfCode = [];
       for (var i = 0; i < arrOfTops.length; i++)
@@ -48,6 +47,7 @@ var message = {result: []}
         }
       }
       organizeStrs(strsOfCode);
+      alert(strsOfCode);
       doParse(strsOfCode);
       chrome.runtime.onConnect.addListener(function(port){
           port.postMessage(message);
@@ -65,27 +65,83 @@ function doParse(aCode){
     var iObj = 0;
     for(var iLineNumber = 0; iLineNumber<aCode.length; iLineNumber++){
         var sCode = aCode[iLineNumber];
-        // its a comment
         if(sCode.includes("//")) continue;
         if(sCode.includes("console")) continue;
         if(sCode.includes("var")){
             createObj(sCode, aObj, "var", iLineNumber, iObj++);
         }else if(sCode.includes("function")){
             createObj(sCode, aObj, "function", iLineNumber, iObj++);
-            findFunctionScope();
+            var sName = getName(sCode, "function");
+            findFunctionScope(aCode, sName, iLineNumber, aObj);
         }else if(sCode.includes("const")){
             createObj(sCode, aObj, "const", iLineNumber, iObj++);
         }else{
             updateUsage(sCode, aObj, iLineNumber, iObj);
         }
     }
-    //alert(aCode);
-    console.log(aObj);
     var json = {"objects":aObj};
     console.log(smell_detector(JSON.stringify(json)));
     alert("HI");
 }
-function findFunctionScope(){
+function findFunctionScope(aCode, sName, iLineNumber, aObj){
+    var oFunc = findObj(aObj, sName);
+    var iOpen = 1;
+    var iAcc = iLineNumber + 1;
+    var returnLine = -1;
+    var hasTry = false;
+    var validCatch = false;
+    while(iAcc++ < aCode.length && iOpen != 0){
+        var sCode = aCode[iLineNumber];
+        if(sCode.includes("{")){
+            iOpen++;
+        }else if(sCode.includes("return")){
+            returnLine = iAcc;
+        }else if(sCode.includes("}")){
+            iOpen--;
+        }else if(sCode.includes("try")){
+            hasTry = true;
+        }else if(hasTry && sCode.includes("catch")){
+            var iEnd = findCatchScope(aCode, iAcc+1);
+            validCatch = validateCatch(aCode, iAcc+1, iEnd);
+            // we can have multiple try catch block
+            hasTry = false;
+        }
+    }
+    oFunc["end"] = iAcc;
+    oFunc["returnLine"] = returnLine;
+    oFunc["hasCatch"] = validCatch && !hasTry;
+    console.log(oFunc);
+}
+function findCatchScope(aCode, iLineNumber){
+    var iOpen = 1;
+    while(iLineNumber++<aCode.length && iOpen != 0){
+        var sCode = aCode[iLineNumber];
+        if(sCode.includes("{")){
+            iOpen++;
+        }else if(sCode.includes("}")){
+            iOpen--;
+        }
+    }
+    return iLineNumber;
+}
+function validateCatch(aCode, iStart, iEnd){
+    var bCatch = false;
+    while(iStart++<iEnd){
+        var sCode = aCode[iStart];
+        if(sCode && !sCode.trim()){
+            bCatch = true;
+            break;
+        }
+    }
+    return bCatch;
+}
+function findObj(aObj, sName){
+    for(var iIndex = 0; iIndex<aObj.length; iIndex++){
+        if(aObj[iIndex]["name"] == sName){
+            return aObj[iIndex];
+        }
+    }
+    return null;
 }
 function updateUsage(sCode, aObj, iLineNumber, iObj){
     var aCode = sCode.split(/\s+/);
@@ -134,7 +190,7 @@ function getName(sCode, sType){
             break;
         }
     }
-    sName = (sType == "function")? sType.split("(")[0]:sName;
+    sName = (sType == "function")? sName.split("(")[0]:sName;
     return sName;
 }
 function Obj(name, type, declaration, usage, lineNum) {
