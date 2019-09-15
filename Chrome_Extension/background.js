@@ -12,17 +12,40 @@ var message = {result: []}
 
      // console.log(htmlDoc);
       linesOfCode = htmlDoc.getElementsByClassName("view-line");
-
-      var strsOfCode = [];
-      for(var i = 0; i < linesOfCode.length; i++)
+      var listOfLinesObj = [];
+      for (var i = 0; i < linesOfCode.length; i++)
       {
-        strsOfCode.push(linesOfCode[i].outerText);
-        console.log(linesOfCode[i]);
-        console.log("FirstDebug: " + linesOfCode[i].outerText);
+        var key = linesOfCode[i].outerText;
+        var strObj = {
+          text: linesOfCode[i].outerText,
+          top: linesOfCode[i].style.top
+        };
+        strObj[key] = linesOfCode[i].style.top;
+        listOfLinesObj.push(strObj);
+        
+      }
+      
+      var arrOfTops = [];
+      for (var i = 0; i < listOfLinesObj.length; i++)
+      {
+        arrOfTops.push(listOfLinesObj[i]["top"]);
       }
 
+      arrOfTops.sort(function(a, b) {return a - b});
 
-//      alert(strsOfCode);
+      //sorted:
+      var strsOfCode = [];
+      for (var i = 0; i < arrOfTops.length; i++)
+      {
+        for (var j = 0; j < listOfLinesObj.length; j++)
+        {
+          if (listOfLinesObj[j]["top"] == arrOfTops[i])
+          {
+            strsOfCode.push(listOfLinesObj[j]["text"]);
+          }
+        }
+      }
+
       doParse(strsOfCode);
       chrome.runtime.onConnect.addListener(function(port){
           port.postMessage(message);
