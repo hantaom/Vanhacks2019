@@ -1,0 +1,31 @@
+// Try edit message
+var data = {
+   message: 'Hello world',
+}
+var data2 = 123;
+
+data["new"] = data2;
+console.log(data);
+
+function hello(hi,hi2){
+console.log("hello world!");
+var data3 = 456;
+data[old] = data3;
+function test1(){
+console.log(test);
+try{
+
+}catch(message){
+
+   }
+ }
+function test2(){
+console.log(test);
+ }
+ test1();
+}
+
+console.log(data);
+hello(123,456);
+console.log(data);
+ 

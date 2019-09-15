@@ -10,7 +10,7 @@ var message = {result: []}
       var parser = new DOMParser();
       var htmlDoc = parser.parseFromString(request.content, 'text/html');
 
-     // console.log(htmlDoc);
+      console.log(htmlDoc);
       linesOfCode = htmlDoc.getElementsByClassName("view-line");
       var listOfLinesObj = [];
       for (var i = 0; i < linesOfCode.length; i++)
@@ -43,6 +43,7 @@ var message = {result: []}
           if (parseInt(listOfLinesObj[j]["top"]) == arrOfTops[i])
           {
             strsOfCode.push(listOfLinesObj[j]["text"]);
+            console.log(strsOfCode[i]);
           }
         }
       }
@@ -50,12 +51,12 @@ var message = {result: []}
       var result = doParse(strsOfCode);
       console.log(result)
       var message = smell_detector(result);
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
-            // Not reached?
-            console.log(response.action);
-        });  
-      });
+//      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+//        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
+//            // Not reached?
+//            console.log(response.action);
+//        });
+//      });
 });
 
 function organizeStrs(strsOfCode)
@@ -108,26 +109,37 @@ function doParse(aCode){
 function findFunctionScope(aCode, sName, iLineNumber, aObj){
     var oFunc = findObj(aObj, sName);
     var iOpen = 1;
-    var iAcc = iLineNumber + 1;
+    var iAcc = iLineNumber;
+
     var returnLine = -1;
     var hasTry = false;
     var validCatch = false;
-    while(iAcc++ < aCode.length && iOpen != 0){
-        var sCode = aCode[iLineNumber];
+    while(iAcc++ < aCode.length && iOpen > 0){
+        console.log(iAcc);
+        var sCode = aCode[iAcc];
+        console.log(sCode);
+        console.log(iOpen);
+
         if(sCode.includes("{")){
             iOpen++;
-        }else if(sCode.includes("return")){
+        }
+        if(sCode.includes("return")){
             returnLine = iAcc;
-        }else if(sCode.includes("}")){
+        }
+        if(sCode.includes("}")){
             iOpen--;
-        }else if(sCode.includes("try")){
+        }
+        if(sCode.includes("try")){
             hasTry = true;
-        }else if(hasTry && sCode.includes("catch")){
+        }
+        if(hasTry && sCode.includes("catch")){
             var iEnd = findCatchScope(aCode, iAcc+1);
             validCatch = validateCatch(aCode, iAcc+1, iEnd);
             // we can have multiple try catch block
             hasTry = false;
         }
+                console.log(iOpen);
+
     }
     oFunc["end"] = iAcc;
     oFunc["returnLine"] = returnLine;
@@ -184,12 +196,12 @@ function createObj(sCode, aObj, sType, iLineNumber, iObjCount){
     aUsage[0] = iLineNumber;
     sType = (sType == "var")? "variable":sType;
     sType = (sType == "const")? "constant":sType;
-
-    aObj[iObjCount] = (sType != "function")? new Obj(sName, sType, iLineNumber+1, aUsage, 1): createFunc(sName, sType, iLineNumber+1, aUsage, 1, sCode);
+    var iLine = iLineNumber + 1;
+    aObj[iObjCount] = (sType != "function")? new Obj(sName, sType, iLine, aUsage, 1): createFunc(sName, sType, iLine, aUsage, 1, sCode);
 }
 function createFunc(sName, sType, iLineNumber, aUsage, iLineCount, sCode){
     var sParam = getParam(sCode, sType);
-    return new Func(sName, sType, iLineNumber+1, aUsage, 1, iLineNumber+1, iLineNumber+1, -1, false, sParam);
+    return new Func(sName, sType, iLineNumber, aUsage, 1, iLineNumber, iLineNumber, -1, false, sParam);
 }
 
 function getParam(sCode, sType){
