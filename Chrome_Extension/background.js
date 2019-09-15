@@ -17,6 +17,7 @@ var message = {result: []}
       for(var i = 0; i < linesOfCode.length; i++)
       {
         strsOfCode.push(linesOfCode[i].outerText);
+        console.log(linesOfCode[i]);
         console.log("FirstDebug: " + linesOfCode[i].outerText);
       }
 
@@ -35,20 +36,47 @@ function doParse(aCode){
         var sCode = aCode[i];
         // its a comment
         if(sCode.includes("//")) continue;
+        if(sCode.includes("console")) continue;
         if(sCode.includes("var")){
+            console.log("2");
             createVar(sCode, aObj, i, iObj++);
-                console.log("AfterVar:");
-                console.log(aObj);
         }else if(sCode.includes("function")){
             createFunction(sCode, aObj, i, iObj++);
+        }else if(sCode.includes("const")){
+            console.log("1");
+            createConst(sCode, aObj, i, iObj++);
+        }else{
+            console.log("3");
+            updateUsage(sCode, aObj, i, iObj);
         }
-
     }
     //alert(aCode);
-    console.log(aObj[0]);
+    console.log(aObj);
     var json = {"objects":aObj};
     console.log(smell_detector(JSON.stringify(json)));
     alert("HI");
+}
+function updateUsage(sCode, aObj, i, iObj){
+    var aCode = sCode.split(/\s+/);
+    console.log(aCode);
+    console.log(aObj.length);
+
+    for(var i=0; i<aCode.length; i++){
+        for(var j = 0; j<aObj.length; j++){
+            var oCode = aCode[i];
+            var oObj = aObj[j];
+            console.log("Code: " + oCode);
+            console.log(oObj["name"]);
+
+            if(oObj["name"] == oCode){
+//                console.log("Code: " + oCode);
+//                console.log(oObj);
+
+                var size = oObj.usages.length;
+                oObj.usages[++size] = i;
+            }
+        }
+    }
 }
 function createVar(sCode, aObj, i, iObj){
     // standard convention for declaring a variable is
@@ -65,8 +93,22 @@ function createVar(sCode, aObj, i, iObj){
     aUsage[0] = i;
     aObj[iObj] = new Obj(sName,"variable", i, aUsage, 1);
 }
+function createConst(sCode, aObj, i, iObj){
+    // standard convention for declaring a variable is
+    // var x;
+    var aCode = sCode.split(/\s+/);
+    var sName = "";
+    for(var i=0; i<aCode.length; i++){
+        if(i>0 && aCode[i-1] == "const"){
+            sName = aCode[i];
+            break;
+        }
+    }
+    var aUsage = [];
+    aUsage[0] = i;
+    aObj[iObj] = new Obj(sName,"constant", i, aUsage, 1);
+}
 function createFunction(sCode, aObj, i, iObj){
-    console.log(iObj);
     var aCode = sCode.split(/\s+/);
     var sName = "";
     for(var i=0; i<aCode.length; i++){
@@ -99,7 +141,7 @@ Func.prototype = Object.create(Obj.prototype);
 Func.prototype.constructor = Func;
 
 function smell_detector(json) {
-    console.log(json);
+    // TODO: constant
     // Convert json encoding to json object
     var parsed = JSON.parse(json);
     var result = {code_smells: []};
