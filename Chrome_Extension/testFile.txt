@@ -7,12 +7,34 @@ var data2 = 123;
 data["new"] = data2;
 console.log(data);
 
+function testR1(){
+  var a = "123";
+  return a;
+}
+
+function testR2(){
+  var a1 = "123";
+  return a1;
+  var b = "456";
+}
+
+function testR3(){
+  var c = "678";
+}
+function testc1(){
+  try{
+
+  }catch(message){
+    console.log(message);
+  }
+}
+
 function hello(hi,hi2){
 console.log("hello world!");
 var data3 = 456;
 data[old] = data3;
 function test1(){
-console.log(test);
+console.log("test");
 try{
 
 }catch(message){
@@ -20,7 +42,7 @@ try{
    }
  }
 function test2(){
-console.log(test);
+console.log("test");
  }
  test1();
 }

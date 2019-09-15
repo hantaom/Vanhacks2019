@@ -49,7 +49,6 @@ var message = {result: []}
       }
       organizeStrs(strsOfCode);
       var result = doParse(strsOfCode);
-      console.log(result)
       var message = smell_detector(result);
 //      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
 //        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
@@ -102,8 +101,6 @@ function doParse(aCode){
         }
     }
     var json = {"objects":aObj};
-    // console.log(smell_detector(JSON.stringify(json)));
-    // alert("HI");
     return JSON.stringify(json)
 }
 function findFunctionScope(aCode, sName, iLineNumber, aObj){
@@ -113,18 +110,14 @@ function findFunctionScope(aCode, sName, iLineNumber, aObj){
 
     var returnLine = -1;
     var hasTry = false;
-    var validCatch = false;
+    var validCatch = true;
     while(iAcc++ < aCode.length && iOpen > 0){
-        console.log(iAcc);
         var sCode = aCode[iAcc];
-        console.log(sCode);
-        console.log(iOpen);
-
         if(sCode.includes("{")){
             iOpen++;
         }
         if(sCode.includes("return")){
-            returnLine = iAcc;
+            returnLine = iAcc + 1;
         }
         if(sCode.includes("}")){
             iOpen--;
@@ -133,26 +126,24 @@ function findFunctionScope(aCode, sName, iLineNumber, aObj){
             hasTry = true;
         }
         if(hasTry && sCode.includes("catch")){
-            var iEnd = findCatchScope(aCode, iAcc+1);
-            validCatch = validateCatch(aCode, iAcc+1, iEnd);
+            var iEnd = findCatchScope(aCode, iAcc);
+            validCatch = validateCatch(aCode, iAcc, iEnd) && validCatch;
             // we can have multiple try catch block
             hasTry = false;
         }
-                console.log(iOpen);
-
     }
     oFunc["end"] = iAcc;
     oFunc["returnLine"] = returnLine;
-    oFunc["hasCatch"] = validCatch && !hasTry;
-    console.log(oFunc);
+    oFunc["validCatch"] = validCatch && !hasTry;
 }
 function findCatchScope(aCode, iLineNumber){
     var iOpen = 1;
-    while(iLineNumber++<aCode.length && iOpen != 0){
+    while(iLineNumber++<aCode.length && iOpen > 0){
         var sCode = aCode[iLineNumber];
         if(sCode.includes("{")){
             iOpen++;
-        }else if(sCode.includes("}")){
+        }
+        if(sCode.includes("}")){
             iOpen--;
         }
     }
@@ -160,9 +151,9 @@ function findCatchScope(aCode, iLineNumber){
 }
 function validateCatch(aCode, iStart, iEnd){
     var bCatch = false;
-    while(iStart++<iEnd){
+    while(++iStart<iEnd-1){
         var sCode = aCode[iStart];
-        if(sCode && !sCode.trim()){
+        if(sCode.trim().length >0){
             bCatch = true;
             break;
         }
@@ -178,10 +169,12 @@ function findObj(aObj, sName){
     return null;
 }
 function updateUsage(sCode, aObj, iLineNumber, iObj){
+    sCode = sCode.replace(";","");
     var aCode = sCode.split(/\s+/);
     for(var iCode=0; iCode<aCode.length; iCode++){
         for(var iObj = 0; iObj<aObj.length; iObj++){
             var oCode = aCode[iCode].split("[")[0];
+            oCode = aCode[iCode].split("(")[0];
             var oObj = aObj[iObj];
             if(oObj["name"] == oCode){
                 var size = oObj.usages.length;
@@ -193,7 +186,7 @@ function updateUsage(sCode, aObj, iLineNumber, iObj){
 function createObj(sCode, aObj, sType, iLineNumber, iObjCount){
     var sName = getName(sCode, sType);
     var aUsage = [];
-    aUsage[0] = iLineNumber;
+    aUsage[0] = iLineNumber+1;
     sType = (sType == "var")? "variable":sType;
     sType = (sType == "const")? "constant":sType;
     var iLine = iLineNumber + 1;
@@ -235,13 +228,13 @@ function Obj(name, type, declaration, usage, lineNum) {
   this.lineCount = lineNum;
 }
 
-function Func(name, type, declaration, usage, lineNum, start, end, returnLine, hasCatch, param) {
+function Func(name, type, declaration, usage, lineNum, start, end, returnLine, validCatch, param) {
   Obj.call(this, name, type, declaration, usage, lineNum);
 
   this.start = start;
   this.end = end;
   this.returnLine = returnLine;
-  this.hasCatch = hasCatch;
+  this.validCatch = validCatch;
   this.params = param;
 }
 
@@ -275,7 +268,7 @@ function smell_detector(json) {
                 smells.push(large_obj);
             }
             // 3) Empty Catch: Catch statement does not contain any lines to execute
-            if (obj.catch) {
+            if (obj.validCatch) {
                 var empty_catch = {type: "empty_catch", line: obj.funcStart}
                 smells.push(empty_catch);
             }
