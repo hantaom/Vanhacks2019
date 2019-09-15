@@ -50,12 +50,12 @@ var message = {result: []}
       organizeStrs(strsOfCode);
       var result = doParse(strsOfCode);
       var message = smell_detector(result);
-//      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-//        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
-//            // Not reached?
-//            console.log(response.action);
-//        });
-//      });
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
+            // Not reached?
+            console.log(response.action);
+        });
+     });
 });
 
 function organizeStrs(strsOfCode)

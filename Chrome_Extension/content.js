@@ -2,9 +2,12 @@
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     //if from background:
+    alert(JSON.stringify(request))
+    sendResponse({action: "Received"});
     if (request.code_smells != null){
     var len = request.code_smells.length;
 
+    
     // Loop through smells and display error messages
     if (len > 1) {
       for (var i = 1; i <= len; i++) {
@@ -13,28 +16,34 @@ chrome.runtime.onMessage.addListener(
       }
     }
 
-    console.log(document.getElementsByClassName("sidebar"));
-    console.log("sidebar?");
+    //console.log(document.getElementsByClassName("sidebar"));
+    //console.log("sidebar?");
 
     //In order: (Test data)
-    cm_test =  {
-        "type": "unused_code",
-        "line": 5
-    },
-    {
-        "type": "large_object",
-        "object_size": 25,
-        "recommended_size": 20
-    }
+    cm_test = {
+      "code_smells": [
+          {
+              "type": "unused_code",
+              "line": 5
+          },
+          {
+              "type": "large_object",
+              "object_size": 25,
+              "recommended_size": 20
+          }
+      ]
+  }
 
-    modifyAlert(cm_test);
-    modifyPopup(cm_test);
-    chrome.storage.local.set({cm: {cm_test}}, function() {
-      console.log('Value is set to ' + cm_test);
+    //modifyAlert(cm_test);
+    //modifyPopup(cm_test);
+    
+    chrome.storage.local.set({'cm2': cm_test}, function() {
+      console.log( cm_test['code_smells'][0]);
     });
 
     sendResponse({action: "Received"});
     console.log("Reached? - content");
+    
   }
   
 
@@ -46,71 +55,48 @@ chrome.runtime.onMessage.addListener(
 
       // Directly respond to the sender (popup), 
       // through the specified callback.
-      else
-      {
-      response(cm_test);
-      }
+
+     // response(cm_test);
     //}
+    sendResponse({action: "Received"});
   });
 
 
 function modifyAlert(cs)
 {
-  var display = ""
-  display += "Code Smells Detected: " + "\n"
-    switch(cs["type"]) {
-      case "unused_code":
-        display += "- unreachable code detected in line " + cs["line"] + "\n"
-      case "large_object":
-        display += "- Large object= " + " of size " + cs["size"] + " detected" + "\n"
-      case "empty_catch":
-        display += "- Empty catch detected" + "\n"
-      case "long_method":
-       display += "- Long method detected" + "\n"
-      case "excessive_params":
-        display += "- Excessive parameters detected" + "\n"
-      case "unreachable_code":
-        display += "- Unreachable code detected" + "\n"
-      default:
-        break;
-        
-    }
-    display += "*Check out for more info in the above plugin popup!*"
-    alert(display);
-}
+  console.log("cs");
+  console.log(cs);
+  
+  var display = "";
+  display += "Code Smells Detected: " + "\n";
 
-function modifyPopup(cs)
-{
-  var x = document.getElementsByClassName("thumb");
-  console.log(x);
-  for (var x = 0; x < cs.length; i++)
-  {
-    cs[x].style.display = "none";
+  for (var i = 0; i < cs["code_smells"].length; i++) {
+      switch(cs["code_smells"][i]["type"]) {
+        case "unused_code":
+          display += "- unreachable code detected in line " + cs["code_smells"][i]["line"] + "\n"
+          break;
+        case "large_object":
+          display += "- Large object= " + " of size " + cs["code_smells"][i]["size"] + " detected" + "\n"
+          break;
+        case "empty_catch":
+          display += "- Empty catch detected" + "\n"
+          break;
+        case "long_method":
+        display += "- Long method detected" + "\n"
+        break;
+        case "excessive_params":
+          display += "- Excessive parameters detected" + "\n"
+          break;
+        case "unreachable_code":
+          display += "- Unreachable code detected" + "\n"
+          break;
+        default:
+          break;
+          
+      }
   }
-  for (var i = 0; i < cs.length; i++)
-  {
-    switch(cs["type"]) {
-      case "unused_code":
-        cs[0].style.display = "none";
-        break;
-      case "large_object":
-        cs[1].style.display = "none";
-        break;
-      case "empty_catch":
-        cs[2].style.display = "none";
-        break;
-      case "long_method":
-        cs[3].style.display = "none";
-        break;
-      case "excessive_params":
-        cs[4].style.display = "none";
-        break;
-      case "unreachable_code":
-        cs[5].style.display = "none";
-        break;
-        
-    }
-  }
+  display += "*Check out for more info in the above plugin popup!*"
+  alert(display);
 }
 
 // Inform the background page that 

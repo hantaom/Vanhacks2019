@@ -292,7 +292,28 @@
 					}
 				  });*/
 				  
+				//test?
 
+
+				$(document).keypress(function (eventObject) {
+					chrome.storage.local.get(['cm'], function(result) {
+						console.log('CM Val currently is ' + result);
+					  });
+				});
+
+				chrome.storage.onChanged.addListener(function(changes, namespace) {
+					console.log("changereceived!");
+					for (var key in changes) {
+					  var storageChange = changes[key];
+					  console.log('Storage key "%s" in namespace "%s" changed. ' +
+								  'Old value was "%s", new value is "%s".',
+								  key,
+								  namespace,
+								  storageChange.oldValue,
+								  storageChange.newValue);
+					modifyPopup(changes);
+					}
+				  });
 
 })(jQuery);
 
@@ -336,33 +357,50 @@ const setDOMInfo = info => {
 function modifyPopup(cs)
 {
   var x = document.getElementsByClassName("thumb");
-  console.log(x);
-  for (var x = 0; x < cs.length; i++)
+  console.log(cs);
+  for (var n = 0; n < x.length; n++)
   {
-    cs[x].style.display = "none";
+	console.log(x[n]);
+    x[n].style.display = "none";
   }
-  for (var i = 0; i < cs.length; i++)
+  console.log(cs["code_smells"]);
+  for (var i = 0; i < cs["code_smells"].length; i++)
   {
-    switch(cs["type"]) {
+    switch(cs["code_smells"][i]["type"]) {
       case "unused_code":
-        cs[0].style.display = "none";
+		{
+			console.log("yeet");
+			x[0].style.display = "none";
+			document.getElementsByClassName("unused_code")[0].style.display = "block";
+			x[0].getElementsByClassName("line_num")[0].innerHTML  = cs["code_smells"][i]["line"];
+		}
         break;
       case "large_object":
-        cs[1].style.display = "none";
+		  
+        x[1].style.display = "block";
         break;
       case "empty_catch":
-        cs[2].style.display = "none";
+        x[2].style.display = "block";
         break;
       case "long_method":
-        cs[3].style.display = "none";
+        x[3].style.display = "block";
         break;
       case "excessive_params":
-        cs[4].style.display = "none";
+        x[4].style.display = "block";
         break;
       case "unreachable_code":
-        cs[5].style.display = "none";
+        x[5].style.display = "block";
         break;
         
     }
   }
 }
+
+$(document).keypress(function (eventObject) {
+	chrome.storage.local.get(['cm2'], function(result) {
+		console.log("result:");
+		console.log(result);
+		modifyPopup(result['cm2']);
+
+	  });
+});
