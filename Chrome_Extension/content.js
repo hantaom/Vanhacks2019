@@ -61,21 +61,17 @@ function modifyAlert(cs)
     switch(cs["type"]) {
       case "unused_code":
         display += "- unreachable code detected in line " + cs["line"] + "\n"
-        break;
       case "large_object":
         display += "- Large object= " + " of size " + cs["size"] + " detected" + "\n"
-        break;
       case "empty_catch":
         display += "- Empty catch detected" + "\n"
-        break;
       case "long_method":
        display += "- Long method detected" + "\n"
-        break;
       case "excessive_params":
         display += "- Excessive parameters detected" + "\n"
-        break;
       case "unreachable_code":
         display += "- Unreachable code detected" + "\n"
+      default:
         break;
         
     }
