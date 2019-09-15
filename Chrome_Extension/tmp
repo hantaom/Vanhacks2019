@@ -28,4 +28,3 @@ console.log(test);
 console.log(data);
 hello(123,456);
 console.log(data);
- 
