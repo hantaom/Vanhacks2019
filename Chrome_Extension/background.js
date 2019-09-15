@@ -48,11 +48,11 @@ var message = {result: []}
         }
       }
       organizeStrs(strsOfCode);
-      doParse(strsOfCode);
-      chrome.runtime.onConnect.addListener(function(port){
-          port.postMessage(message);
+      var result = doParse(strsOfCode);
+      var message = smell_detector(result);
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {});  
       });
-      message.result = strsOfCode;
 });
 
 function organizeStrs(strsOfCode)
@@ -81,8 +81,9 @@ function doParse(aCode){
     //alert(aCode);
     console.log(aObj);
     var json = {"objects":aObj};
-    console.log(smell_detector(JSON.stringify(json)));
-    alert("HI");
+    // console.log(smell_detector(JSON.stringify(json)));
+    // alert("HI");
+    return JSON.stringify(json)
 }
 function updateUsage(sCode, aObj, i, iObj){
     var aCode = sCode.split(/\s+/);
