@@ -277,5 +277,92 @@
 				breakpoints.on('>xsmall', function() {
 					$main[0]._poptrox.windowMargin = 50;
 				});
+/*
+				//test?
+				chrome.storage.onChanged.addListener(function(changes, namespace) {
+					for (var key in changes) {
+					  var storageChange = changes[key];
+					  console.log('Storage key "%s" in namespace "%s" changed. ' +
+								  'Old value was "%s", new value is "%s".',
+								  key,
+								  namespace,
+								  storageChange.oldValue,
+								  storageChange.newValue);
+					modifyPopup(changes);
+					}
+				  });*/
+				  
+
 
 })(jQuery);
+
+				//test?
+				chrome.storage.onChanged.addListener(function(changes, namespace) {
+					console.log("changereceived!");
+					for (var key in changes) {
+					  var storageChange = changes[key];
+					  console.log('Storage key "%s" in namespace "%s" changed. ' +
+								  'Old value was "%s", new value is "%s".',
+								  key,
+								  namespace,
+								  storageChange.oldValue,
+								  storageChange.newValue);
+					modifyPopup(changes);
+					}
+				  });
+
+// Update the relevant fields with the new data.
+const setDOMInfo = info => {
+	modifyPopup(info);
+  };
+  
+  // Once the DOM is ready...
+  chrome.browserAction.onClicked.addListener(function(tab) {
+	// ...query for the active tab...
+	chrome.tabs.query({
+		active: true,
+		currentWindow: true
+	  }, tabs => {
+		// ...and send a request for the DOM info...
+		chrome.tabs.sendMessage(
+			tabs.id,
+			{from: 'popup', subject: 'DOMInfo'},
+			// ...also specifying a callback to be called 
+			//    from the receiving end (content script).
+			setDOMInfo);
+	  });
+	});
+
+function modifyPopup(cs)
+{
+  var x = document.getElementsByClassName("thumb");
+  console.log(x);
+  for (var x = 0; x < cs.length; i++)
+  {
+    cs[x].style.display = "none";
+  }
+  for (var i = 0; i < cs.length; i++)
+  {
+    switch(cs["type"]) {
+      case "unused_code":
+        cs[0].style.display = "none";
+        break;
+      case "large_object":
+        cs[1].style.display = "none";
+        break;
+      case "empty_catch":
+        cs[2].style.display = "none";
+        break;
+      case "long_method":
+        cs[3].style.display = "none";
+        break;
+      case "excessive_params":
+        cs[4].style.display = "none";
+        break;
+      case "unreachable_code":
+        cs[5].style.display = "none";
+        break;
+        
+    }
+  }
+}
