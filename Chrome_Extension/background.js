@@ -28,30 +28,38 @@ var message = {result: []}
       var arrOfTops = [];
       for (var i = 0; i < listOfLinesObj.length; i++)
       {
-        arrOfTops.push(listOfLinesObj[i]["top"]);
+        arrOfTops.push(parseInt(listOfLinesObj[i]["top"]));//parse str to int!
       }
+
 
       arrOfTops.sort(function(a, b) {return a - b});
 
-      //sorted:
+      console.log(arrOfTops);
+      //sorted the lines of code:
       var strsOfCode = [];
       for (var i = 0; i < arrOfTops.length; i++)
       {
         for (var j = 0; j < listOfLinesObj.length; j++)
         {
-          if (listOfLinesObj[j]["top"] == arrOfTops[i])
+          if (parseInt(listOfLinesObj[j]["top"]) == arrOfTops[i])
           {
             strsOfCode.push(listOfLinesObj[j]["text"]);
           }
         }
       }
-
+      organizeStrs(strsOfCode);
       doParse(strsOfCode);
       chrome.runtime.onConnect.addListener(function(port){
           port.postMessage(message);
       });
       message.result = strsOfCode;
 });
+
+function organizeStrs(strsOfCode)
+{
+  console.log(strsOfCode);
+}
+
 function doParse(aCode){
     var aObj = [];
     var iObj = 0;
