@@ -1,12 +1,12 @@
 // Identifies the code smells that exist in the given javascript file
 function smell_detector(json) {
     // Convert json encoding to json object
-    var objects = JSON.parse(json);
+    var parsed = JSON.parse(json);
     var result = {code_smells: []};
 
     // Loop through all existing objects
-    for (var i = 0; i < objects.length; i++) {
-        var obj = objects[i];
+    for (var i = 0; i < parsed.objects.length; i++) {
+        var obj = parsed.objects[i];
         var smells = [];
         // Handle cases where object is either variable or function
         if (obj.type == 'variable') {
@@ -50,4 +50,5 @@ function smell_detector(json) {
         }
         result.code_smells.push(smell);
     }
+    return result;
   }
