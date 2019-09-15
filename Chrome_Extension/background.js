@@ -1,19 +1,41 @@
 // background.js
 
-// Called when the user clicks on the browser action.
-chrome.browserAction.onClicked.addListener(function(tab) {
-    // Send a message to the active tab
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      var activeTab = tabs[0];
-      chrome.tabs.sendMessage(activeTab.id, {"message": "clicked_browser_action"});
-    });
-  });
-  
-  // This block is new!
-  chrome.runtime.onMessage.addListener(
+//parse:
+
+  chrome.extension.onRequest.addListener(
     function(request, sender, sendResponse) {
-      if( request.message === "open_new_tab" ) {
-        chrome.tabs.create({"url": request.url});
+      // LOG THE CONTENTS HERE
+      //console.log(request.content);
+      var parser = new DOMParser();
+      var htmlDoc = parser.parseFromString(request.content, 'text/html');
+
+     // console.log(htmlDoc);
+      linesOfCode = htmlDoc.getElementsByClassName("view-line");
+
+      var strsOfCode = [];
+      for(var i = 0; i < linesOfCode.length; i++)
+      {
+        strsOfCode.push(linesOfCode[i].outerText);
+        console.log("FirstDebug: " + linesOfCode[i].outerText);
       }
-    }
-  );
+
+      //UNCOMMENT:
+      //doParse(strsOfCode);
+    
+    });
+  
+
+    
+chrome.commands.onCommand.addListener(function(command) {
+  if (command === "check-codesmell") {
+
+  chrome.tabs.getSelected(null, function(tab) {
+  
+    // Now inject a script onto the page
+    chrome.tabs.executeScript(tab.id, {
+         code: "chrome.extension.sendRequest({content: document.body.innerHTML}, function(response) { console.log('success'); });"
+       }, function() { console.log('done'); });
+  
+  });
+}
+});
