@@ -47,16 +47,37 @@ var message = {result: []}
         }
       }
       organizeStrs(strsOfCode);
-      alert(strsOfCode);
-      doParse(strsOfCode);
-      chrome.runtime.onConnect.addListener(function(port){
-          port.postMessage(message);
+      var result = doParse(strsOfCode);
+      console.log(result)
+      var message = smell_detector(result);
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
+            // Not reached?
+            console.log(response.action);
+        });  
       });
-      message.result = strsOfCode;
 });
 
 function organizeStrs(strsOfCode)
 {
+  for (var i = 0; i < strsOfCode.length; i++)
+  {
+        if (strsOfCode[i].includes('{')) {//if char in middle is {
+            if (/[^\s\n{]\n*$/.test(strsOfCode[i])) {//if last char not white space, linebreak or {
+                var splitStrs = strsOfCode[i].split('{');
+                strsOfCode[i] = splitStrs[0] + '{';
+                strsOfCode.splice(i + 1, 0, splitStrs[1]);
+            }
+        }
+        else if (strsOfCode[i].includes('}'))
+        {
+            if (/\S+}/.test(strsOfCode[i])) {//if everything before closing bracket is non-whiteSpace char
+                var splitStrs = strsOfCode[i].split('}');
+                strsOfCode[i] = splitStrs[0];
+                strsOfCode.splice(i + 1, 0, '}');
+            }
+        }
+  }
   console.log(strsOfCode);
 }
 
@@ -80,8 +101,9 @@ function doParse(aCode){
         }
     }
     var json = {"objects":aObj};
-    console.log(smell_detector(JSON.stringify(json)));
-    alert("HI");
+    // console.log(smell_detector(JSON.stringify(json)));
+    // alert("HI");
+    return JSON.stringify(json)
 }
 function findFunctionScope(aCode, sName, iLineNumber, aObj){
     var oFunc = findObj(aObj, sName);
