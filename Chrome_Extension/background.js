@@ -57,6 +57,24 @@ var message = {result: []}
 
 function organizeStrs(strsOfCode)
 {
+  for (var i = 0; i < strsOfCode.length; i++)
+  {
+        if (strsOfCode[i].includes('{')) {//if char in middle is {
+            if (/[^\s\n{]\n*$/.test(strsOfCode[i])) {//if last char not white space, linebreak or {
+                var splitStrs = strsOfCode[i].split('{');
+                strsOfCode[i] = splitStrs[0] + '{';
+                strsOfCode.splice(i + 1, 0, splitStrs[1]);
+            }
+        }
+        else if (strsOfCode[i].includes('}'))
+        {
+            if (/\S+}/.test(strsOfCode[i])) {//if everything before closing bracket is non-whiteSpace char
+                var splitStrs = strsOfCode[i].split('}');
+                strsOfCode[i] = splitStrs[0];
+                strsOfCode.splice(i + 1, 0, '}');
+            }
+        }
+  }
   console.log(strsOfCode);
 }
 
