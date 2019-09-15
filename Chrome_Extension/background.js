@@ -1,6 +1,7 @@
 // background.js
 
 //parse:
+var message = {result: []}
 
   chrome.extension.onRequest.addListener(
     function(request, sender, sendResponse) {
@@ -19,12 +20,16 @@
         console.log("FirstDebug: " + linesOfCode[i].outerText);
       }
 
+      message.result = strsOfCode;
+
       //UNCOMMENT:
       //doParse(strsOfCode);
     
     });
   
-
+chrome.runtime.onConnect.addListener(function(port){
+    port.postMessage(message);
+});
     
 chrome.commands.onCommand.addListener(function(command) {
   if (command === "check-codesmell") {
