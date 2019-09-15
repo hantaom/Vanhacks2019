@@ -38,15 +38,12 @@ function doParse(aCode){
         if(sCode.includes("//")) continue;
         if(sCode.includes("console")) continue;
         if(sCode.includes("var")){
-            console.log("2");
             createVar(sCode, aObj, i, iObj++);
         }else if(sCode.includes("function")){
             createFunction(sCode, aObj, i, iObj++);
         }else if(sCode.includes("const")){
-            console.log("1");
             createConst(sCode, aObj, i, iObj++);
         }else{
-            console.log("3");
             updateUsage(sCode, aObj, i, iObj);
         }
     }
@@ -58,25 +55,34 @@ function doParse(aCode){
 }
 function updateUsage(sCode, aObj, i, iObj){
     var aCode = sCode.split(/\s+/);
-    console.log(aCode);
-    console.log(aObj.length);
-
-    for(var i=0; i<aCode.length; i++){
-        for(var j = 0; j<aObj.length; j++){
-            var oCode = aCode[i];
-            var oObj = aObj[j];
-            console.log("Code: " + oCode);
-            console.log(oObj["name"]);
-
+    for(var iCode=0; iCode<aCode.length; iCode++){
+        for(var iObj = 0; iObj<aObj.length; iObj++){
+            var oCode = aCode[iCode].split("[")[0];
+            var oObj = aObj[iObj];
             if(oObj["name"] == oCode){
-//                console.log("Code: " + oCode);
-//                console.log(oObj);
-
                 var size = oObj.usages.length;
-                oObj.usages[++size] = i;
+                oObj.usages[size] = i;
             }
         }
     }
+}
+function createObj(sCode, aObj, sType, iLineNumber, iObjCount){
+    var sName = getName(sCode, sType);
+    var aUsage = [];
+    aUsage[0] = iLineNumber;
+    aObj[iObjCount] = new Obj(sName, sType, i, aUsage, 1);
+}
+
+function getName(sCode, sType){
+    var aCode = sCode.split(/\s+/);
+    var sName = "";
+    for(var i=0; i<aCode.length; i++){
+        if(i>0 && aCode[i-1] == sType){
+            sName = aCode[i];
+            break;
+        }
+    }
+    return sName;
 }
 function createVar(sCode, aObj, i, iObj){
     // standard convention for declaring a variable is
