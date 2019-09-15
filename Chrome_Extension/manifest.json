@@ -3,7 +3,7 @@
     "name": "Chromarly",
     "version": "1.0",
     "background": {
-      "scripts": ["background.js", "jquery-3.4.1.min.js"],
+      "scripts": ["background.js", "jquery.min.js"],
       "persistent": true
     },
     "permissions": [
@@ -12,7 +12,7 @@
     "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["content.js"]
+        "js": ["content.js", "jquery.min.js"]
       }
     ],
     "browser_action": {

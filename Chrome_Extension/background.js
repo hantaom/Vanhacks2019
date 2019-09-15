@@ -49,9 +49,13 @@ var message = {result: []}
       }
       organizeStrs(strsOfCode);
       var result = doParse(strsOfCode);
+      console.log(result)
       var message = smell_detector(result);
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {});  
+        chrome.tabs.sendMessage(tabs[0].id, message, function(response) {
+            // Not reached?
+            console.log(response.action);
+        });  
       });
 });
 
